@@ -21,6 +21,9 @@ interface GuestDraft {
   notes: string;
 }
 
+type GuestSortKey = 'displayName' | 'plannedGuestCount' | 'side' | 'invitationStatus' | 'forecastStatus';
+type SortDirection = 'asc' | 'desc';
+
 const createEmptyDraft = (): GuestDraft => ({
   displayName: '',
   side: 'shared',
@@ -48,6 +51,9 @@ export class GuestListComponent implements OnChanges {
   searchTerm = '';
   sideFilter: 'all' | GuestSide = 'all';
   invitationFilter: 'all' | InvitationStatus = 'all';
+  forecastFilter: 'all' | ForecastStatus = 'all';
+  sortKey: GuestSortKey = 'displayName';
+  sortDirection: SortDirection = 'asc';
   draft: GuestDraft = createEmptyDraft();
   bulkText = '';
   bulkSide: GuestSide = 'shared';
@@ -77,6 +83,8 @@ export class GuestListComponent implements OnChanges {
       const matchesSide = this.sideFilter === 'all' || entry.side === this.sideFilter;
       const matchesInvitation = this.invitationFilter === 'all'
         || entry.invitationStatus === this.invitationFilter;
+      const matchesForecast = this.forecastFilter === 'all'
+        || entry.forecastStatus === this.forecastFilter;
       const searchableText = [
         entry.displayName,
         entry.phone ?? '',
@@ -85,8 +93,9 @@ export class GuestListComponent implements OnChanges {
 
       return matchesSide
         && matchesInvitation
+        && matchesForecast
         && (!search || searchableText.includes(search));
-    });
+    }).sort((a, b) => this.compareGuestEntries(a, b));
   }
 
   get plannedGuestTotal(): number {
@@ -338,6 +347,33 @@ export class GuestListComponent implements OnChanges {
     return 'Ortak';
   }
 
+  invitationLabel(status: InvitationStatus): string {
+    return status === 'sent' ? 'Gönderildi' : 'Gönderilmedi';
+  }
+
+  forecastLabel(status: ForecastStatus): string {
+    if (status === 'coming') return 'Geliyor';
+    if (status === 'not-coming') return 'Gelmiyor';
+    if (status === 'likely') return 'Gelme ihtimali yüksek';
+    if (status === 'unlikely') return 'Gelmeme ihtimali yüksek';
+    return 'Henüz bilinmiyor';
+  }
+
+  setSort(key: GuestSortKey): void {
+    if (this.sortKey === key) {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+      return;
+    }
+
+    this.sortKey = key;
+    this.sortDirection = key === 'plannedGuestCount' ? 'desc' : 'asc';
+  }
+
+  sortIndicator(key: GuestSortKey): string {
+    if (this.sortKey !== key) return '↕';
+    return this.sortDirection === 'asc' ? '↑' : '↓';
+  }
+
   private updateEntry(
     entry: GuestListEntry,
     payload: { invitationStatus?: InvitationStatus; forecastStatus?: ForecastStatus }
@@ -358,6 +394,26 @@ export class GuestListComponent implements OnChanges {
 
   private replaceEntry(entry: GuestListEntry): void {
     this.entries = this.entries.map((item) => item.id === entry.id ? entry : item);
+  }
+
+  private compareGuestEntries(a: GuestListEntry, b: GuestListEntry): number {
+    const direction = this.sortDirection === 'asc' ? 1 : -1;
+
+    if (this.sortKey === 'plannedGuestCount') {
+      return (a.plannedGuestCount - b.plannedGuestCount) * direction;
+    }
+
+    const left = this.getGuestSortValue(a);
+    const right = this.getGuestSortValue(b);
+
+    return left.localeCompare(right, 'tr-TR', { sensitivity: 'base' }) * direction;
+  }
+
+  private getGuestSortValue(entry: GuestListEntry): string {
+    if (this.sortKey === 'displayName') return entry.displayName;
+    if (this.sortKey === 'side') return this.sideLabel(entry.side);
+    if (this.sortKey === 'invitationStatus') return this.invitationLabel(entry.invitationStatus);
+    return this.forecastLabel(entry.forecastStatus);
   }
 
   private normalizeGuestCount(value: number): number {

@@ -46,11 +46,6 @@ h3 {
   gap: 10px;
 }
 
-.header-actions {
-  flex-wrap: wrap;
-  justify-content: flex-end;
-}
-
 .primary-button,
 .secondary-button,
 .text-button,
@@ -197,12 +192,11 @@ textarea:focus {
 }
 
 .list-toolbar label {
-  width: 180px;
+  width: 170px;
 }
 
 .list-toolbar .search-field {
   flex: 1;
-  width: auto;
 }
 
 .refresh-button {
@@ -252,7 +246,7 @@ textarea:focus {
 
 table {
   width: 100%;
-  min-width: 1040px;
+  min-width: 1120px;
   table-layout: fixed;
   border-collapse: collapse;
   font-size: 0.9rem;
@@ -400,8 +394,8 @@ select:disabled {
   }
 
   tr {
-    margin-bottom: 10px;
-    padding: 12px 14px;
+    margin-bottom: 12px;
+    padding: 16px;
     border: 1px solid #ded7e0;
     border-radius: 8px;
     background: #fff;
@@ -409,9 +403,10 @@ select:disabled {
 
   td {
     display: grid;
-    grid-template-columns: 90px minmax(0, 1fr);
+    grid-template-columns: 94px minmax(0, 1fr);
     gap: 10px;
-    padding: 7px 0;
+    align-items: start;
+    padding: 9px 0;
     border: 0;
   }
 
@@ -420,6 +415,10 @@ select:disabled {
     color: #756d77;
     font-size: 0.75rem;
     font-weight: 700;
+  }
+
+  td > * {
+    grid-column: 2;
   }
 
   .row-action-buttons {

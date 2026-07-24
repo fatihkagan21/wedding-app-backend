@@ -150,6 +150,17 @@
         <option value="sent">Gönderildi</option>
       </select>
     </label>
+    <label>
+      <span>Beklenti</span>
+      <select [(ngModel)]="forecastFilter">
+        <option value="all">Tümü</option>
+        <option value="coming">Geliyor</option>
+        <option value="not-coming">Gelmiyor</option>
+        <option value="likely">Gelme ihtimali yüksek</option>
+        <option value="unlikely">Gelmeme ihtimali yüksek</option>
+        <option value="unknown">Henüz bilinmiyor</option>
+      </select>
+    </label>
     <button class="secondary-button refresh-button" type="button" (click)="loadEntries()" [disabled]="loading">
       Yenile
     </button>
@@ -178,8 +189,8 @@
     <div class="table-wrap">
       <table>
         <colgroup>
-          <col style="width: 36%">
-          <col style="width: 5%">
+          <col style="width: 34%">
+          <col style="width: 7%">
           <col style="width: 10%">
           <col style="width: 14%">
           <col style="width: 20%">
@@ -187,11 +198,31 @@
         </colgroup>
         <thead>
           <tr>
-            <th>Davetli</th>
-            <th>Kişi</th>
-            <th>Taraf</th>
-            <th>Davetiye</th>
-            <th>Beklenti</th>
+            <th>
+              <button class="sort-button" style="width: 100%; display: flex; gap: 5px; border: 0; background: transparent; cursor: pointer; white-space: nowrap;" type="button" (click)="setSort('displayName')">
+                Davetli <span>{{ sortIndicator('displayName') }}</span>
+              </button>
+            </th>
+            <th>
+              <button class="sort-button" style="width: 100%; display: flex; gap: 5px; border: 0; background: transparent; cursor: pointer; white-space: nowrap;" type="button" (click)="setSort('plannedGuestCount')">
+                Kişi <span>{{ sortIndicator('plannedGuestCount') }}</span>
+              </button>
+            </th>
+            <th>
+              <button class="sort-button" style="width: 100%; display: flex; gap: 5px; border: 0; background: transparent; cursor: pointer; white-space: nowrap;" type="button" (click)="setSort('side')">
+                Taraf <span>{{ sortIndicator('side') }}</span>
+              </button>
+            </th>
+            <th>
+              <button class="sort-button" style="width: 100%; display: flex; gap: 5px; border: 0; background: transparent; cursor: pointer; white-space: nowrap;" type="button" (click)="setSort('invitationStatus')">
+                Davetiye <span>{{ sortIndicator('invitationStatus') }}</span>
+              </button>
+            </th>
+            <th>
+              <button class="sort-button" style="width: 100%; display: flex; gap: 5px; border: 0; background: transparent; cursor: pointer; white-space: nowrap;" type="button" (click)="setSort('forecastStatus')">
+                Beklenti <span>{{ sortIndicator('forecastStatus') }}</span>
+              </button>
+            </th>
             <th class="action-heading">İşlem</th>
           </tr>
         </thead>
