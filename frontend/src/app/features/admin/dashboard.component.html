@@ -77,7 +77,10 @@
           (ngModelChange)="saveGuestLimit()">
       </label>
       <label class="checkbox-field">
-        <input type="checkbox" [(ngModel)]="notesOnly" (ngModelChange)="resetPagination()">
+        <input
+          type="checkbox"
+          [ngModel]="notesFilter === 'with-notes'"
+          (ngModelChange)="notesFilter = $event ? 'with-notes' : 'all'; resetPagination()">
         <span>Notlular</span>
       </label>
       <button class="secondary-button refresh-button" type="button" (click)="loadRsvps()" [disabled]="loading">
@@ -172,11 +175,29 @@
           <table>
             <thead>
               <tr>
-                <th>İletişim</th>
-                <th>Durum</th>
-                <th>Misafirler</th>
-                <th>Not</th>
-                <th>Tarih</th>
+                <th>
+                  <button class="sort-button" type="button" (click)="setRsvpSort('contactFullName')">
+                    İletişim <span>{{ rsvpSortIndicator('contactFullName') }}</span>
+                  </button>
+                </th>
+                <th>
+                  <button class="sort-button" type="button" (click)="setRsvpSort('attending')">
+                    Durum <span>{{ rsvpSortIndicator('attending') }}</span>
+                  </button>
+                </th>
+                <th>
+                  <button class="sort-button" type="button" (click)="setRsvpSort('guestCount')">
+                    Misafirler <span>{{ rsvpSortIndicator('guestCount') }}</span>
+                  </button>
+                </th>
+                <th>
+                  <span class="static-heading">Not</span>
+                </th>
+                <th>
+                  <button class="sort-button" type="button" (click)="setRsvpSort('createdAt')">
+                    Tarih <span>{{ rsvpSortIndicator('createdAt') }}</span>
+                  </button>
+                </th>
                 <th><span class="sr-only">İşlem</span></th>
               </tr>
             </thead>

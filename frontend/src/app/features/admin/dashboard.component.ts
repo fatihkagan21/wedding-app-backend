@@ -8,6 +8,10 @@ import { Event } from '../../models/event.model';
 import { Rsvp } from '../../models/rsvp.model';
 import { GuestListComponent } from './guest-list/guest-list.component';
 
+type RsvpSortKey = 'contactFullName' | 'attending' | 'guestCount' | 'createdAt';
+type SortDirection = 'asc' | 'desc';
+type RsvpNotesFilter = 'all' | 'with-notes';
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -25,7 +29,9 @@ export class DashboardComponent implements OnInit {
   rsvps: Rsvp[] = [];
   searchTerm = '';
   attendanceFilter: 'all' | 'attending' | 'declined' = 'all';
-  notesOnly = false;
+  notesFilter: RsvpNotesFilter = 'all';
+  rsvpSortKey: RsvpSortKey = 'createdAt';
+  rsvpSortDirection: SortDirection = 'desc';
   guestLimit = 0;
   loading = false;
   deletingId = '';
@@ -50,7 +56,9 @@ export class DashboardComponent implements OnInit {
       const matchesAttendance = this.attendanceFilter === 'all'
         || (this.attendanceFilter === 'attending' && rsvp.attending)
         || (this.attendanceFilter === 'declined' && !rsvp.attending);
-      const matchesNotes = !this.notesOnly || !!rsvp.notes?.trim();
+      const hasNotes = !!rsvp.notes?.trim();
+      const matchesNotes = this.notesFilter === 'all'
+        || (this.notesFilter === 'with-notes' && hasNotes);
       const searchableText = [
         rsvp.contactFullName,
         ...(rsvp.attendees ?? []),
@@ -58,7 +66,7 @@ export class DashboardComponent implements OnInit {
       ].join(' ').toLocaleLowerCase('tr-TR');
 
       return matchesAttendance && matchesNotes && (!search || searchableText.includes(search));
-    }).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    }).sort((a, b) => this.compareRsvps(a, b));
   }
 
   get paginatedRsvps(): Rsvp[] {
@@ -308,6 +316,49 @@ export class DashboardComponent implements OnInit {
         this.errorMessage = 'Kayıt silinemedi. Lütfen tekrar deneyin.';
       }
     });
+  }
+
+  setRsvpSort(key: RsvpSortKey): void {
+    if (this.rsvpSortKey === key) {
+      this.rsvpSortDirection = this.rsvpSortDirection === 'asc' ? 'desc' : 'asc';
+      this.resetPagination();
+      return;
+    }
+
+    this.rsvpSortKey = key;
+    this.rsvpSortDirection = key === 'createdAt' || key === 'guestCount' ? 'desc' : 'asc';
+    this.resetPagination();
+  }
+
+  rsvpSortIndicator(key: RsvpSortKey): string {
+    if (this.rsvpSortKey !== key) return '↕';
+    return this.rsvpSortDirection === 'asc' ? '↑' : '↓';
+  }
+
+  private compareRsvps(a: Rsvp, b: Rsvp): number {
+    const direction = this.rsvpSortDirection === 'asc' ? 1 : -1;
+
+    if (this.rsvpSortKey === 'guestCount') {
+      return (this.getRsvpGuestCount(a) - this.getRsvpGuestCount(b)) * direction;
+    }
+
+    if (this.rsvpSortKey === 'createdAt') {
+      return (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()) * direction;
+    }
+
+    const left = this.getRsvpSortValue(a);
+    const right = this.getRsvpSortValue(b);
+
+    return left.localeCompare(right, 'tr-TR', { sensitivity: 'base' }) * direction;
+  }
+
+  private getRsvpSortValue(rsvp: Rsvp): string {
+    if (this.rsvpSortKey === 'contactFullName') return rsvp.contactFullName;
+    return rsvp.attending ? 'Katılıyor' : 'Katılmıyor';
+  }
+
+  private getRsvpGuestCount(rsvp: Rsvp): number {
+    return rsvp.attending ? rsvp.attendeeCount ?? 0 : 0;
   }
 
   private loadGuestLimit(): void {

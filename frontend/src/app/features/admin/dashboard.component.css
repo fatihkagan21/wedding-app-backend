@@ -431,6 +431,7 @@ select:focus {
 
 table {
   width: 100%;
+  min-width: 980px;
   border-collapse: collapse;
   font-size: 0.9rem;
 }
@@ -448,6 +449,31 @@ th {
   color: #6c656e;
   font-size: 0.75rem;
   text-transform: uppercase;
+}
+
+.sort-button,
+.static-heading {
+  width: 100%;
+  min-height: 30px;
+  padding: 5px 7px;
+  font-size: 0.75rem;
+}
+
+.sort-button,
+.static-heading {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: inherit;
+  font-weight: 800;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.sort-button {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
 }
 
 tbody tr:last-child td {
