@@ -5,6 +5,7 @@ import * as service from "./guest-list.service.js";
 import {
   bulkCreateGuestListEntrySchema,
   createGuestListEntrySchema,
+  migrateRsvpsToGuestListSchema,
   updateGuestListEntrySchema,
 } from "./validation/guest-list-entry.schema.js";
 
@@ -13,7 +14,13 @@ const sendError = (res: Response, error: unknown, fallback: string) => {
     return res.status(error.statusCode).json({ error: error.message });
   }
 
-  return res.status(500).json({ error: fallback });
+  console.error(fallback, error);
+  return res.status(500).json({
+    error: fallback,
+    ...(process.env.NODE_ENV === "production" || !(error instanceof Error)
+      ? {}
+      : { detail: error.message }),
+  });
 };
 
 export const getGuestListByEvent = async (req: Request, res: Response) => {
@@ -50,6 +57,20 @@ export const createGuestListEntries = async (req: Request, res: Response) => {
     return res.status(201).json(entries);
   } catch (error) {
     return sendError(res, error, "Failed to create guest list entries");
+  }
+};
+
+export const migrateRsvpsToGuestList = async (req: Request, res: Response) => {
+  const result = migrateRsvpsToGuestListSchema.safeParse(req.body);
+  if (!result.success) {
+    return res.status(400).json({ error: z.treeifyError(result.error) });
+  }
+
+  try {
+    const migration = await service.migrateRsvpsToGuestList(result.data);
+    return res.status(200).json(migration);
+  } catch (error) {
+    return sendError(res, error, "Failed to migrate RSVPs to guest list");
   }
 };
 

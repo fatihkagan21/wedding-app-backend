@@ -2,6 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import {
   CreateGuestListEntryPayload,
   GuestListEntry,
+  GuestListMigrationResult,
   UpdateGuestListEntryPayload,
 } from '../../models/guest-list-entry.model';
 import { ApiService } from './api.service';
@@ -26,6 +27,15 @@ export class GuestListService {
 
   createBulk(entries: CreateGuestListEntryPayload[], adminKey: string) {
     return this.api.post<GuestListEntry[]>('/guest-list/bulk', { entries }, {
+      headers: { 'x-admin-key': adminKey },
+    });
+  }
+
+  migrateRsvps(eventId: string, adminKey: string, dryRun = false) {
+    return this.api.post<GuestListMigrationResult>('/guest-list/migrate-rsvps', {
+      eventId,
+      dryRun,
+    }, {
       headers: { 'x-admin-key': adminKey },
     });
   }

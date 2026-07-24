@@ -28,3 +28,12 @@ export type UpdateGuestListEntryPayload = Partial<
   phone?: string | null;
   notes?: string | null;
 };
+
+export interface GuestListMigrationResult {
+  dryRun: boolean;
+  totalRsvps: number;
+  alreadyMigrated: number;
+  pending: number;
+  created: number;
+  skippedExisting: number;
+}

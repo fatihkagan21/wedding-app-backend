@@ -40,3 +40,8 @@ export const updateGuestListEntrySchema = z.object({
 export const bulkCreateGuestListEntrySchema = z.object({
   entries: z.array(createGuestListEntrySchema).min(1).max(500),
 });
+
+export const migrateRsvpsToGuestListSchema = z.object({
+  eventId: z.string().uuid().optional(),
+  dryRun: z.boolean().optional().default(false),
+});

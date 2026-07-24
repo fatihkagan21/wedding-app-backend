@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input, OnChanges, SimpleChanges, inject } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { GuestListService } from '../../../core/services/guest-list.service';
 import {
@@ -58,6 +59,7 @@ export class GuestListComponent implements OnChanges {
   deletingId = '';
   loading = false;
   saving = false;
+  migratingRsvps = false;
   errorMessage = '';
   feedbackMessage = '';
 
@@ -266,6 +268,43 @@ export class GuestListComponent implements OnChanges {
     });
   }
 
+  migrateRsvps(): void {
+    if (!this.eventId) return;
+
+    const confirmed = window.confirm(
+      'Seçili etkinliğin RSVP kayıtları davetli planına aktarılacak. Devam edilsin mi?'
+    );
+    if (!confirmed) return;
+
+    this.migratingRsvps = true;
+    this.clearMessages();
+    this.guestListService.migrateRsvps(this.eventId, this.adminKey).subscribe({
+      next: (result) => {
+        this.migratingRsvps = false;
+        this.loadEntries();
+
+        if (!result.totalRsvps) {
+          this.feedbackMessage = 'Aktarılacak RSVP kaydı bulunamadı.';
+          return;
+        }
+
+        if (!result.created) {
+          this.feedbackMessage = 'Tüm RSVP kayıtları davetli planında zaten mevcut.';
+          return;
+        }
+
+        this.feedbackMessage = `${result.created} RSVP kaydı davetli planına aktarıldı.`;
+      },
+      error: (error: unknown) => {
+        this.migratingRsvps = false;
+        this.errorMessage = this.getApiErrorMessage(
+          error,
+          'RSVP kayıtları davetli planına aktarılamadı.'
+        );
+      },
+    });
+  }
+
   updateInvitationStatus(entry: GuestListEntry, status: InvitationStatus): void {
     this.updateEntry(entry, { invitationStatus: status });
   }
@@ -328,6 +367,18 @@ export class GuestListComponent implements OnChanges {
   private handleSaveError(message: string): void {
     this.saving = false;
     this.errorMessage = message;
+  }
+
+  private getApiErrorMessage(error: unknown, fallback: string): string {
+    if (error instanceof HttpErrorResponse) {
+      const response = error.error as { error?: unknown; detail?: unknown } | null;
+      const detail = typeof response?.detail === 'string' ? response.detail : '';
+      const apiError = typeof response?.error === 'string' ? response.error : fallback;
+
+      return detail ? `${apiError}: ${detail}` : apiError;
+    }
+
+    return fallback;
   }
 
   private clearMessages(): void {

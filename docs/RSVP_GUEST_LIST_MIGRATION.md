@@ -1,10 +1,10 @@
 # RSVP kayıtlarını davetli planına aktarma
 
 Bu işlem, canlı veritabanındaki mevcut RSVP yanıtlarını `GuestListEntry` kayıtlarına dönüştürür.
-Her oluşturulan kayıt kaynak RSVP'nin `rsvpId` değeriyle bağlanır. Script tekrar çalıştırıldığında
+Her oluşturulan kayıt kaynak RSVP'nin `rsvpId` değeriyle bağlanır. Aktarım tekrar çalıştırıldığında
 aynı RSVP için ikinci bir davetli kaydı oluşturulmaz.
 
-## Aktarım kuralları
+## Aktarım Kuralları
 
 - Katılıyor yanıtı: `Geliyor`
 - Katılmıyor yanıtı: `Gelmiyor`
@@ -13,12 +13,20 @@ aynı RSVP için ikinci bir davetli kaydı oluşturulmaz.
 - Planlanan kişi sayısı: Katılan RSVP'deki kişi sayısı; katılmayan yanıtta `1`
 - RSVP notu ve katılımcı isimleri: Davetli kaydının not alanı
 
-## Canlı ortamda kullanım
+## Render Free Workaround
 
-Önce yeni sürümü deploy edin ve deploy loglarında Prisma migration'larının başarıyla
-uygulandığını doğrulayın. İşlemden önce veritabanı yedeği alın.
+Render free web servisinde shell kullanılamıyorsa aktarımı admin panelinden yapabilirsiniz.
 
-Render'da `wedding-api` servisinin **Shell** ekranını açın.
+1. Yeni sürümü deploy edin ve deploy loglarında Prisma migration'larının başarıyla uygulandığını doğrulayın.
+2. `/admin` sayfasını açın.
+3. İlgili etkinliği seçin.
+4. **Davetli Planı** sekmesinde **RSVP aktar** butonuna basın.
+5. Sonuç mesajında kaç RSVP kaydının davetli planına eklendiğini kontrol edin.
+
+Butona tekrar basmak güvenlidir. Daha önce `rsvpId` ile bağlanmış RSVP kayıtları atlanır.
+Bu işlem mevcut RSVP yanıtlarını silmez veya değiştirmez; yalnızca davetli planında eksik olan kayıtları oluşturur.
+
+## Shell Olan Ortamda Kullanım
 
 Önce yalnızca sonucu görmek için:
 
@@ -37,20 +45,6 @@ Yalnızca belirli bir etkinliği aktarmak için:
 ```bash
 npm run migrate:rsvps-to-guest-list -- --dry-run --event-id=ETKINLIK_UUID
 npm run migrate:rsvps-to-guest-list -- --event-id=ETKINLIK_UUID
-```
-
-Aktarımdan sonra `/admin` sayfasındaki **Davetli Planı** bölümünü yenileyin. Scripti yeniden
-çalıştırmak güvenlidir; daha önce `rsvpId` ile bağlanan kayıtlar atlanır.
-
-## Yerel ortamda kullanım
-
-PostgreSQL çalışırken:
-
-```powershell
-cd backend
-npm.cmd run build
-npm.cmd run migrate:rsvps-to-guest-list -- --dry-run
-npm.cmd run migrate:rsvps-to-guest-list
 ```
 
 Komut, `DATABASE_URL` environment değişkenindeki veritabanını kullanır.

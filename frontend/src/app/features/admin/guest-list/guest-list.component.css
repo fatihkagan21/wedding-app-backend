@@ -46,6 +46,11 @@ h3 {
   gap: 10px;
 }
 
+.header-actions {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 .primary-button,
 .secondary-button,
 .text-button,
@@ -286,10 +291,7 @@ td select {
   min-width: 0;
 }
 
-.row-actions {
-  text-align: right;
-}
-
+.row-actions,
 .action-heading {
   text-align: right;
 }
@@ -418,10 +420,6 @@ select:disabled {
     color: #756d77;
     font-size: 0.75rem;
     font-weight: 700;
-  }
-
-  td select {
-    min-width: 0;
   }
 
   .row-action-buttons {

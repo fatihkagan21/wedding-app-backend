@@ -1,5 +1,4 @@
 import "dotenv/config";
-import { mapRsvpToGuestListEntry } from "./rsvp-guest-list-mapping.js";
 
 interface MigrationOptions {
   dryRun: boolean;
@@ -8,15 +7,15 @@ interface MigrationOptions {
 
 const printUsage = () => {
   console.log(`
-RSVP kayıtlarını davetli planına aktarır.
+RSVP kayitlarini davetli planina aktarir.
 
-Kullanım:
+Kullanim:
   npm run migrate:rsvps-to-guest-list -- [--dry-run] [--event-id=<uuid>]
 
-Seçenekler:
-  --dry-run          Veritabanını değiştirmeden aktarım sayısını gösterir.
-  --event-id=<uuid>  Yalnızca belirtilen etkinliğin RSVP kayıtlarını aktarır.
-  --help             Bu açıklamayı gösterir.
+Secenekler:
+  --dry-run          Veritabanini degistirmeden aktarim sayisini gosterir.
+  --event-id=<uuid>  Yalnizca belirtilen etkinligin RSVP kayitlarini aktarir.
+  --help             Bu aciklamayi gosterir.
 `);
 };
 
@@ -30,7 +29,7 @@ const parseOptions = (args: string[]): MigrationOptions => {
   const eventId = eventArgument?.slice("--event-id=".length).trim();
 
   if (eventArgument && !eventId) {
-    throw new Error("--event-id değeri boş olamaz");
+    throw new Error("--event-id degeri bos olamaz");
   }
 
   return {
@@ -41,6 +40,9 @@ const parseOptions = (args: string[]): MigrationOptions => {
 
 const main = async () => {
   const options = parseOptions(process.argv.slice(2));
+  const { migrateRsvpsToGuestList } = await import(
+    "../modules/guest-list/guest-list.service.js"
+  );
   const { prisma } = await import("../modules/prisma.js");
 
   try {
@@ -51,49 +53,35 @@ const main = async () => {
       });
 
       if (!event) {
-        throw new Error(`Etkinlik bulunamadı: ${options.eventId}`);
+        throw new Error(`Etkinlik bulunamadi: ${options.eventId}`);
       }
 
       console.log(`Etkinlik: ${event.title} (${event.id})`);
     }
 
-    const rsvps = await prisma.rsvp.findMany({
-      where: options.eventId ? { eventId: options.eventId } : undefined,
-      orderBy: { createdAt: "asc" },
-    });
+    const result = await migrateRsvpsToGuestList(options);
 
-    if (!rsvps.length) {
-      console.log("Aktarılacak RSVP kaydı bulunamadı.");
+    if (!result.totalRsvps) {
+      console.log("Aktarilacak RSVP kaydi bulunamadi.");
       return;
     }
 
-    const rsvpIds = rsvps.map((rsvp) => rsvp.id);
-    const alreadyMigrated = await prisma.guestListEntry.count({
-      where: { rsvpId: { in: rsvpIds } },
-    });
-    const pendingCount = rsvps.length - alreadyMigrated;
-
-    console.log(`Toplam RSVP: ${rsvps.length}`);
-    console.log(`Daha önce aktarılmış: ${alreadyMigrated}`);
-    console.log(`Aktarılmayı bekleyen: ${pendingCount}`);
+    console.log(`Toplam RSVP: ${result.totalRsvps}`);
+    console.log(`Daha once aktarilmis: ${result.alreadyMigrated}`);
+    console.log(`Aktarilmayi bekleyen: ${result.pending}`);
 
     if (options.dryRun) {
-      console.log("Dry-run tamamlandı; veritabanında değişiklik yapılmadı.");
+      console.log("Dry-run tamamlandi; veritabaninda degisiklik yapilmadi.");
       return;
     }
 
-    if (!pendingCount) {
-      console.log("Tüm RSVP kayıtları daha önce aktarılmış.");
+    if (!result.pending) {
+      console.log("Tum RSVP kayitlari daha once aktarilmis.");
       return;
     }
 
-    const result = await prisma.guestListEntry.createMany({
-      data: rsvps.map(mapRsvpToGuestListEntry),
-      skipDuplicates: true,
-    });
-
-    console.log(`Yeni oluşturulan davetli kaydı: ${result.count}`);
-    console.log(`Atlanan mevcut kayıt: ${rsvps.length - result.count}`);
+    console.log(`Yeni olusturulan davetli kaydi: ${result.created}`);
+    console.log(`Atlanan mevcut kayit: ${result.skippedExisting}`);
   } finally {
     await prisma.$disconnect();
   }
@@ -101,6 +89,6 @@ const main = async () => {
 
 main()
   .catch((error) => {
-    console.error("RSVP aktarımı başarısız:", error);
+    console.error("RSVP aktarimi basarisiz:", error);
     process.exitCode = 1;
   });

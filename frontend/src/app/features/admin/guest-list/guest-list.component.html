@@ -5,6 +5,14 @@
       <h2 id="guest-list-title">Davetli Planı</h2>
     </div>
     <div class="header-actions">
+      <button
+        class="secondary-button migrate-button"
+        style="min-width: 128px"
+        type="button"
+        (click)="migrateRsvps()"
+        [disabled]="migratingRsvps || loading">
+        {{ migratingRsvps ? 'Aktarılıyor...' : 'RSVP aktar' }}
+      </button>
       <button class="secondary-button" type="button" (click)="openBulkForm()">Toplu ekle</button>
       <button class="primary-button" type="button" (click)="openCreateForm()">Davetli ekle</button>
     </div>

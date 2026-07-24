@@ -3,6 +3,7 @@ import test from "node:test";
 import {
   bulkCreateGuestListEntrySchema,
   createGuestListEntrySchema,
+  migrateRsvpsToGuestListSchema,
   updateGuestListEntrySchema,
 } from "./guest-list-entry.schema.js";
 
@@ -47,4 +48,10 @@ test("bulk guest list validation accepts multiple entries", () => {
     assert.equal(result.data.entries.length, 2);
     assert.equal(result.data.entries[1].plannedGuestCount, 2);
   }
+});
+
+test("RSVP migration validation defaults to a real run", () => {
+  const result = migrateRsvpsToGuestListSchema.parse({ eventId });
+
+  assert.deepEqual(result, { eventId, dryRun: false });
 });

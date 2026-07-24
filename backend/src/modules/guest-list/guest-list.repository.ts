@@ -3,6 +3,7 @@ import {
   CreateGuestListEntryDto,
   UpdateGuestListEntryDto,
 } from "./dto/guest-list-entry.dto.js";
+import type { MigratedGuestListEntry } from "../../scripts/rsvp-guest-list-mapping.js";
 
 export const getGuestListByEvent = (eventId: string) => {
   return prisma.guestListEntry.findMany({
@@ -23,6 +24,24 @@ export const createGuestListEntries = (entries: CreateGuestListEntryDto[]) => {
   return prisma.$transaction(
     entries.map((data) => prisma.guestListEntry.create({ data }))
   );
+};
+
+export const getRsvpsForGuestListMigration = (eventId?: string) => {
+  return prisma.rsvp.findMany({
+    where: eventId ? { eventId } : undefined,
+    orderBy: { createdAt: "asc" },
+  });
+};
+
+export const getMigratedGuestListRsvpIds = (rsvpIds: string[]) => {
+  return prisma.guestListEntry.findMany({
+    where: { rsvpId: { in: rsvpIds } },
+    select: { rsvpId: true },
+  });
+};
+
+export const createMigratedGuestListEntry = (entry: MigratedGuestListEntry) => {
+  return prisma.guestListEntry.create({ data: entry });
 };
 
 export const updateGuestListEntry = (
