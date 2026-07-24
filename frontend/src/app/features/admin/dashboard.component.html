@@ -28,12 +28,27 @@
     <header class="admin-header">
       <div>
         <p class="eyebrow">Yönetim</p>
-        <h1>Katılım Yanıtları</h1>
+        <h1>Düğün Yönetimi</h1>
       </div>
       <button class="secondary-button" type="button" (click)="signOut()">Çıkış</button>
     </header>
 
-    <section class="toolbar" aria-label="Davetiye ve arama filtreleri">
+    <nav class="admin-view-tabs" aria-label="Yönetim bölümleri">
+      <button
+        type="button"
+        [class.active]="activeView === 'guest-list'"
+        (click)="activeView = 'guest-list'">
+        Davetli Planı
+      </button>
+      <button
+        type="button"
+        [class.active]="activeView === 'rsvps'"
+        (click)="activeView = 'rsvps'">
+        RSVP Yanıtları
+      </button>
+    </nav>
+
+    <section class="event-context" aria-label="Seçili davetiye">
       <label>
         <span>Davetiye</span>
         <select [(ngModel)]="selectedEventId" (ngModelChange)="loadRsvps()">
@@ -42,6 +57,12 @@
           }
         </select>
       </label>
+    </section>
+
+    @if (activeView === 'guest-list') {
+      <app-guest-list [eventId]="selectedEventId" [adminKey]="adminKey"></app-guest-list>
+    } @else {
+    <section class="toolbar" aria-label="Davetiye ve arama filtreleri">
       <label class="search-field">
         <span>Ara</span>
         <input type="search" placeholder="İsim, misafir veya not" [(ngModel)]="searchTerm" (ngModelChange)="resetPagination()">
@@ -200,7 +221,8 @@
             </div>
           </nav>
         }
-      }
-    </section>
+        }
+      </section>
+    }
   </main>
 }

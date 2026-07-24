@@ -36,6 +36,7 @@ model Event {
   createdAt     DateTime @default(now())
 
   rsvps         Rsvp[]
+  guestListEntries GuestListEntry[]
 }
 
 model Rsvp {
@@ -53,4 +54,28 @@ model Rsvp {
   notes           String?
 
   createdAt       DateTime @default(now())
+  guestListEntry  GuestListEntry?
+}
+
+model GuestListEntry {
+  id                  String   @id @default(uuid())
+
+  eventId             String
+  event               Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  rsvpId              String?  @unique
+  rsvp                Rsvp?    @relation(fields: [rsvpId], references: [id], onDelete: SetNull)
+
+  displayName         String
+  side                String   @default("shared")
+  plannedGuestCount   Int      @default(1)
+  phone               String?
+  invitationStatus    String   @default("not-sent")
+  forecastStatus      String   @default("unknown")
+  notes               String?
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([eventId])
 }

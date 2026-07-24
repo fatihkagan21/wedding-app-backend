@@ -5,9 +5,10 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
-    "test": "npm run build && node --test dist/shared/middleware/admin-event-access.test.js dist/shared/middleware/memory-upload-gate.middleware.test.js dist/modules/rsvp/rsvp-notification.service.test.js",
+    "test": "npm run build && node --test dist/shared/middleware/admin-event-access.test.js dist/shared/middleware/memory-upload-gate.middleware.test.js dist/modules/rsvp/rsvp-notification.service.test.js dist/modules/guest-list/validation/guest-list-entry.schema.test.js dist/scripts/rsvp-guest-list-mapping.test.js",
     "test:load": "node tests/load/event-api-load.mjs",
     "dev": "tsx watch src/server.ts",
+    "migrate:rsvps-to-guest-list": "node dist/scripts/migrate-rsvps-to-guest-list.js",
     "seed:prod": "node prisma/seed.js",
     "start:prod": "prisma migrate deploy && npm run seed:prod && node dist/server.js"
   },

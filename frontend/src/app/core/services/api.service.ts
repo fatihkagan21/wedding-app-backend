@@ -15,8 +15,12 @@ export class ApiService {
     return this.http.get<T>(`${this.baseUrl}${url}`, options);
   }
 
-  post<T>(url: string, body: unknown) {
-    return this.http.post<T>(`${this.baseUrl}${url}`, body);
+  post<T>(url: string, body: unknown, options?: { headers?: Record<string, string> }) {
+    return this.http.post<T>(`${this.baseUrl}${url}`, body, options);
+  }
+
+  patch<T>(url: string, body: unknown, options?: { headers?: Record<string, string> }) {
+    return this.http.patch<T>(`${this.baseUrl}${url}`, body, options);
   }
 
   delete<T>(url: string, options?: { headers?: Record<string, string> }) {

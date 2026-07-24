@@ -6,11 +6,12 @@ import { EventService } from '../../core/services/event.service';
 import { RsvpService } from '../../core/services/rsvp.service';
 import { Event } from '../../models/event.model';
 import { Rsvp } from '../../models/rsvp.model';
+import { GuestListComponent } from './guest-list/guest-list.component';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, GuestListComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
 })
@@ -30,6 +31,7 @@ export class DashboardComponent implements OnInit {
   deletingId = '';
   errorMessage = '';
   authenticated = false;
+  activeView: 'guest-list' | 'rsvps' = 'guest-list';
   readonly pageSize = 10;
   currentPage = 1;
 

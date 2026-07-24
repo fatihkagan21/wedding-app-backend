@@ -1,0 +1,253 @@
+<section class="guest-list-shell" aria-labelledby="guest-list-title">
+  <header class="section-header">
+    <div>
+      <p class="eyebrow">Planlama</p>
+      <h2 id="guest-list-title">Davetli Planı</h2>
+    </div>
+    <div class="header-actions">
+      <button
+        class="secondary-button migrate-button"
+        style="min-width: 128px"
+        type="button"
+        (click)="migrateRsvps()"
+        [disabled]="migratingRsvps || loading">
+        {{ migratingRsvps ? 'Aktarılıyor...' : 'RSVP aktar' }}
+      </button>
+      <button class="secondary-button" type="button" (click)="openBulkForm()">Toplu ekle</button>
+      <button class="primary-button" type="button" (click)="openCreateForm()">Davetli ekle</button>
+    </div>
+  </header>
+
+  @if (showEntryForm) {
+    <form class="entry-form" (ngSubmit)="saveEntry()">
+      <div class="form-heading">
+        <h3>{{ editingId ? 'Davetliyi düzenle' : 'Yeni davetli' }}</h3>
+        <button class="text-button" type="button" (click)="closeForms()">Kapat</button>
+      </div>
+      <div class="form-grid">
+        <label class="wide-field">
+          <span>İsim veya aile adı</span>
+          <input name="displayName" type="text" maxlength="120" [(ngModel)]="draft.displayName" required>
+        </label>
+        <label>
+          <span>Kişi sayısı</span>
+          <input name="plannedGuestCount" type="number" min="1" max="20" [(ngModel)]="draft.plannedGuestCount">
+        </label>
+        <label>
+          <span>Taraf</span>
+          <select name="side" [(ngModel)]="draft.side">
+            <option value="shared">Ortak</option>
+            <option value="bride">Gelin tarafı</option>
+            <option value="groom">Damat tarafı</option>
+          </select>
+        </label>
+        <label>
+          <span>Telefon</span>
+          <input name="phone" type="tel" maxlength="40" [(ngModel)]="draft.phone">
+        </label>
+        <label>
+          <span>Davetiye</span>
+          <select name="invitationStatus" [(ngModel)]="draft.invitationStatus">
+            <option value="not-sent">Gönderilmedi</option>
+            <option value="sent">Gönderildi</option>
+          </select>
+        </label>
+        <label>
+          <span>Katılım beklentisi</span>
+          <select name="forecastStatus" [(ngModel)]="draft.forecastStatus">
+            <option value="coming">Geliyor</option>
+            <option value="not-coming">Gelmiyor</option>
+            <option value="likely">Gelme ihtimali yüksek</option>
+            <option value="unlikely">Gelmeme ihtimali yüksek</option>
+            <option value="unknown">Henüz bilinmiyor</option>
+          </select>
+        </label>
+        <label class="notes-field">
+          <span>Not</span>
+          <input name="notes" type="text" maxlength="500" [(ngModel)]="draft.notes">
+        </label>
+      </div>
+      <div class="form-actions">
+        <button class="secondary-button" type="button" (click)="closeForms()">İptal</button>
+        <button class="primary-button" type="submit" [disabled]="saving">
+          {{ saving ? 'Kaydediliyor...' : 'Kaydet' }}
+        </button>
+      </div>
+    </form>
+  }
+
+  @if (showBulkForm) {
+    <form class="entry-form bulk-form" (ngSubmit)="saveBulkEntries()">
+      <div class="form-heading">
+        <h3>Toplu davetli ekle</h3>
+        <button class="text-button" type="button" (click)="closeForms()">Kapat</button>
+      </div>
+      <label>
+        <span>Davetliler</span>
+        <textarea
+          name="bulkText"
+          rows="8"
+          placeholder="Ayşe Yılmaz&#10;Mehmet ve Zeynep Kaya | 2"
+          [(ngModel)]="bulkText"></textarea>
+        <small>Her satıra bir kayıt yazın. Kişi sayısı için isimden sonra | kullanın.</small>
+      </label>
+      <div class="bulk-options">
+        <label>
+          <span>Taraf</span>
+          <select name="bulkSide" [(ngModel)]="bulkSide">
+            <option value="shared">Ortak</option>
+            <option value="bride">Gelin tarafı</option>
+            <option value="groom">Damat tarafı</option>
+          </select>
+        </label>
+        <label>
+          <span>Katılım beklentisi</span>
+          <select name="bulkForecast" [(ngModel)]="bulkForecast">
+            <option value="coming">Geliyor</option>
+            <option value="not-coming">Gelmiyor</option>
+            <option value="likely">Gelme ihtimali yüksek</option>
+            <option value="unlikely">Gelmeme ihtimali yüksek</option>
+            <option value="unknown">Henüz bilinmiyor</option>
+          </select>
+        </label>
+      </div>
+      <div class="form-actions">
+        <button class="secondary-button" type="button" (click)="closeForms()">İptal</button>
+        <button class="primary-button" type="submit" [disabled]="saving">
+          {{ saving ? 'Ekleniyor...' : 'Listeye ekle' }}
+        </button>
+      </div>
+    </form>
+  }
+
+  <section class="guest-metrics" aria-label="Davetli planı özeti">
+    <article><span>Liste kaydı</span><strong>{{ entries.length }}</strong></article>
+    <article><span>Planlanan kişi</span><strong>{{ plannedGuestTotal }}</strong></article>
+    <article><span>Davetiye gönderilen</span><strong>{{ sentInvitationCount }}</strong></article>
+    <article><span>Gelmesi beklenen</span><strong>{{ expectedGuestTotal }}</strong></article>
+    <article><span>Belirsiz</span><strong>{{ unknownGuestTotal }}</strong></article>
+  </section>
+
+  <div class="list-toolbar">
+    <label class="search-field">
+      <span>Ara</span>
+      <input type="search" placeholder="İsim, telefon veya not" [(ngModel)]="searchTerm">
+    </label>
+    <label>
+      <span>Taraf</span>
+      <select [(ngModel)]="sideFilter">
+        <option value="all">Tümü</option>
+        <option value="shared">Ortak</option>
+        <option value="bride">Gelin tarafı</option>
+        <option value="groom">Damat tarafı</option>
+      </select>
+    </label>
+    <label>
+      <span>Davetiye</span>
+      <select [(ngModel)]="invitationFilter">
+        <option value="all">Tümü</option>
+        <option value="not-sent">Gönderilmedi</option>
+        <option value="sent">Gönderildi</option>
+      </select>
+    </label>
+    <button class="secondary-button refresh-button" type="button" (click)="loadEntries()" [disabled]="loading">
+      Yenile
+    </button>
+  </div>
+
+  @if (errorMessage) {
+    <p class="message error" role="alert">{{ errorMessage }}</p>
+  }
+  @if (feedbackMessage) {
+    <p class="message success" role="status">{{ feedbackMessage }}</p>
+  }
+
+  @if (loading) {
+    <p class="empty-state">Davetli listesi yükleniyor...</p>
+  } @else if (!entries.length) {
+    <div class="empty-state">
+      <strong>Davetli listesi henüz boş.</strong>
+      <div>
+        <button class="secondary-button" type="button" (click)="openBulkForm()">Toplu ekle</button>
+        <button class="primary-button" type="button" (click)="openCreateForm()">İlk davetliyi ekle</button>
+      </div>
+    </div>
+  } @else if (!filteredEntries.length) {
+    <p class="empty-state">Bu filtrelere uygun davetli bulunamadı.</p>
+  } @else {
+    <div class="table-wrap">
+      <table>
+        <colgroup>
+          <col style="width: 36%">
+          <col style="width: 5%">
+          <col style="width: 10%">
+          <col style="width: 14%">
+          <col style="width: 20%">
+          <col style="width: 15%">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>Davetli</th>
+            <th>Kişi</th>
+            <th>Taraf</th>
+            <th>Davetiye</th>
+            <th>Beklenti</th>
+            <th class="action-heading">İşlem</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (entry of filteredEntries; track entry.id) {
+            <tr [class.updating]="updatingId === entry.id">
+              <td data-label="Davetli">
+                <strong>{{ entry.displayName }}</strong>
+                @if (entry.phone) {
+                  <small>{{ entry.phone }}</small>
+                }
+                @if (entry.notes) {
+                  <small>{{ entry.notes }}</small>
+                }
+              </td>
+              <td data-label="Kişi">{{ entry.plannedGuestCount }}</td>
+              <td data-label="Taraf">{{ sideLabel(entry.side) }}</td>
+              <td data-label="Davetiye">
+                <select
+                  aria-label="Davetiye durumu"
+                  [ngModel]="entry.invitationStatus"
+                  (ngModelChange)="updateInvitationStatus(entry, $event)"
+                  [disabled]="updatingId === entry.id">
+                  <option value="not-sent">Gönderilmedi</option>
+                  <option value="sent">Gönderildi</option>
+                </select>
+              </td>
+              <td data-label="Beklenti">
+                <select
+                  aria-label="Katılım beklentisi"
+                  [ngModel]="entry.forecastStatus"
+                  (ngModelChange)="updateForecastStatus(entry, $event)"
+                  [disabled]="updatingId === entry.id">
+                  <option value="coming">Geliyor</option>
+                  <option value="not-coming">Gelmiyor</option>
+                  <option value="likely">Gelme ihtimali yüksek</option>
+                  <option value="unlikely">Gelmeme ihtimali yüksek</option>
+                  <option value="unknown">Henüz bilinmiyor</option>
+                </select>
+              </td>
+              <td class="row-actions" data-label="İşlem">
+                <div class="row-action-buttons">
+                  <button class="edit-button" type="button" (click)="openEditForm(entry)">Düzenle</button>
+                  <button
+                    class="delete-button"
+                    type="button"
+                    (click)="deleteEntry(entry)"
+                    [disabled]="deletingId === entry.id">
+                    Sil
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>
