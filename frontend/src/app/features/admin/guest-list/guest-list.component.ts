@@ -384,6 +384,10 @@ export class GuestListComponent implements OnChanges {
     this.updateEntry(entry, { forecastStatus: status });
   }
 
+  updateSide(entry: GuestListEntry, side: GuestSide): void {
+    this.updateEntry(entry, { side });
+  }
+
   deleteEntry(entry: GuestListEntry): void {
     const confirmed = window.confirm(`${entry.displayName} kaydını silmek istiyor musunuz?`);
     if (!confirmed) return;
@@ -448,7 +452,11 @@ export class GuestListComponent implements OnChanges {
 
   private updateEntry(
     entry: GuestListEntry,
-    payload: { invitationStatus?: InvitationStatus; forecastStatus?: ForecastStatus }
+    payload: {
+      side?: GuestSide;
+      invitationStatus?: InvitationStatus;
+      forecastStatus?: ForecastStatus;
+    }
   ): void {
     this.updatingId = entry.id;
     this.clearMessages();
