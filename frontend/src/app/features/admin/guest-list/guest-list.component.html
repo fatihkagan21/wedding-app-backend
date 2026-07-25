@@ -101,6 +101,13 @@
           </select>
         </label>
         <label>
+          <span>Davetiye</span>
+          <select name="bulkInvitationStatus" [(ngModel)]="bulkInvitationStatus">
+            <option value="not-sent">Gönderilmedi</option>
+            <option value="sent">Gönderildi</option>
+          </select>
+        </label>
+        <label>
           <span>Katılım beklentisi</span>
           <select name="bulkForecast" [(ngModel)]="bulkForecast">
             <option value="coming">Geliyor</option>
@@ -121,21 +128,27 @@
   }
 
   <section class="guest-metrics" aria-label="Davetli planı özeti">
-    <article><span>Liste kaydı</span><strong>{{ entries.length }}</strong></article>
-    <article><span>Planlanan kişi</span><strong>{{ plannedGuestTotal }}</strong></article>
-    <article><span>Davetiye gönderilen</span><strong>{{ sentInvitationCount }}</strong></article>
-    <article><span>Gelmesi beklenen</span><strong>{{ expectedGuestTotal }}</strong></article>
-    <article><span>Belirsiz</span><strong>{{ unknownGuestTotal }}</strong></article>
+    <article><span>Tüm davetiye gönderilenler</span><strong>{{ sentInvitationGuestTotal }}</strong></article>
+    <article><span>Gelenler</span><strong>{{ comingGuestTotal }}</strong></article>
+    <article><span>Gelme ihtimali yüksek</span><strong>{{ likelyGuestTotal }}</strong></article>
+    <article><span>Gelmeyenler</span><strong>{{ notComingGuestTotal }}</strong></article>
+    <article><span>Gelmeme ihtimali yüksek</span><strong>{{ unlikelyGuestTotal }}</strong></article>
+    <article><span>Belirsizler</span><strong>{{ unknownGuestTotal }}</strong></article>
+    <article>
+      <span>Anlık olası katılımcı</span>
+      <strong>{{ currentPossibleGuestTotal }}</strong>
+      <small style="display: block; color: #756d77; font-size: 0.72rem;">Belirsizler dahildir</small>
+    </article>
   </section>
 
   <div class="list-toolbar">
     <label class="search-field">
       <span>Ara</span>
-      <input type="search" placeholder="İsim, telefon veya not" [(ngModel)]="searchTerm">
+      <input type="search" placeholder="İsim, telefon veya not" [(ngModel)]="searchTerm" (ngModelChange)="currentPage = 1">
     </label>
     <label>
       <span>Taraf</span>
-      <select [(ngModel)]="sideFilter">
+      <select [(ngModel)]="sideFilter" (ngModelChange)="currentPage = 1">
         <option value="all">Tümü</option>
         <option value="shared">Ortak</option>
         <option value="bride">Gelin tarafı</option>
@@ -144,7 +157,7 @@
     </label>
     <label>
       <span>Davetiye</span>
-      <select [(ngModel)]="invitationFilter">
+      <select [(ngModel)]="invitationFilter" (ngModelChange)="currentPage = 1">
         <option value="all">Tümü</option>
         <option value="not-sent">Gönderilmedi</option>
         <option value="sent">Gönderildi</option>
@@ -152,7 +165,7 @@
     </label>
     <label>
       <span>Beklenti</span>
-      <select [(ngModel)]="forecastFilter">
+      <select [(ngModel)]="forecastFilter" (ngModelChange)="currentPage = 1">
         <option value="all">Tümü</option>
         <option value="coming">Geliyor</option>
         <option value="not-coming">Gelmiyor</option>
@@ -227,7 +240,7 @@
           </tr>
         </thead>
         <tbody>
-          @for (entry of filteredEntries; track entry.id) {
+          @for (entry of paginatedEntries; track entry.id) {
             <tr [class.updating]="updatingId === entry.id">
               <td data-label="Davetli">
                 <strong>{{ entry.displayName }}</strong>
@@ -278,7 +291,41 @@
             </tr>
           }
         </tbody>
+        <tfoot>
+          <tr>
+            <td data-label="Davetli">
+              <strong>Filtre toplamı</strong>
+              <small>{{ filteredEntryCount }} kayıt</small>
+            </td>
+            <td data-label="Kişi">
+              <strong>{{ filteredGuestTotal }}</strong>
+              <small>kişi</small>
+            </td>
+            <td data-label="Taraf"></td>
+            <td data-label="Davetiye">
+              <strong>{{ filteredSentInvitationGuestTotal }}</strong>
+              <small>gönderilen kişi</small>
+            </td>
+            <td data-label="Beklenti">
+              <strong>{{ filteredCurrentPossibleGuestTotal }}</strong>
+              <small>anlık olası</small>
+            </td>
+            <td data-label="İşlem"></td>
+          </tr>
+        </tfoot>
       </table>
+    </div>
+    <div
+      style="display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-top: 12px; flex-wrap: wrap;">
+      <span style="color: #756d77; font-size: 0.85rem;">
+        {{ pageStart }}-{{ pageEnd }} / {{ filteredEntryCount }} kayıt
+      </span>
+      <button class="secondary-button" type="button" (click)="goToPreviousPage()" [disabled]="activePage === 1">
+        Önceki
+      </button>
+      <button class="secondary-button" type="button" (click)="goToNextPage()" [disabled]="activePage === totalPages">
+        Sonraki
+      </button>
     </div>
   }
 </section>
