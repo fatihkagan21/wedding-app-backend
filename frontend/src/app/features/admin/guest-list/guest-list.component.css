@@ -148,21 +148,21 @@ textarea:focus {
 
 .bulk-options {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 220px));
+  grid-template-columns: repeat(3, minmax(0, 220px));
   gap: 14px;
   margin-top: 14px;
 }
 
 .guest-metrics {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   border: 1px solid #ded7e0;
   border-radius: 8px;
   background: #fff;
 }
 
 .guest-metrics article {
-  padding: 18px;
+  padding: 15px;
   border-right: 1px solid #e7e1e8;
 }
 
@@ -172,6 +172,7 @@ textarea:focus {
 
 .guest-metrics span {
   display: block;
+  min-height: 34px;
   color: #756d77;
   font-size: 0.78rem;
   font-weight: 700;
@@ -180,7 +181,7 @@ textarea:focus {
 .guest-metrics strong {
   display: block;
   margin-top: 4px;
-  font-size: 1.65rem;
+  font-size: 1.55rem;
   line-height: 1.2;
 }
 
@@ -379,6 +380,7 @@ select:disabled {
 
   table,
   tbody,
+  tfoot,
   tr,
   td {
     display: block;

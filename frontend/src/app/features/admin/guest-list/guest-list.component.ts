@@ -54,9 +54,12 @@ export class GuestListComponent implements OnChanges {
   forecastFilter: 'all' | ForecastStatus = 'all';
   sortKey: GuestSortKey = 'displayName';
   sortDirection: SortDirection = 'asc';
+  readonly pageSize = 10;
+  currentPage = 1;
   draft: GuestDraft = createEmptyDraft();
   bulkText = '';
   bulkSide: GuestSide = 'shared';
+  bulkInvitationStatus: InvitationStatus = 'not-sent';
   bulkForecast: ForecastStatus = 'unknown';
   showEntryForm = false;
   showBulkForm = false;
@@ -98,24 +101,83 @@ export class GuestListComponent implements OnChanges {
     }).sort((a, b) => this.compareGuestEntries(a, b));
   }
 
+  get paginatedEntries(): GuestListEntry[] {
+    const startIndex = (this.activePage - 1) * this.pageSize;
+
+    return this.filteredEntries.slice(startIndex, startIndex + this.pageSize);
+  }
+
+  get totalPages(): number {
+    return Math.max(1, Math.ceil(this.filteredEntries.length / this.pageSize));
+  }
+
+  get activePage(): number {
+    return Math.min(this.currentPage, this.totalPages);
+  }
+
+  get pageStart(): number {
+    if (!this.filteredEntries.length) return 0;
+    return (this.activePage - 1) * this.pageSize + 1;
+  }
+
+  get pageEnd(): number {
+    return Math.min(this.activePage * this.pageSize, this.filteredEntries.length);
+  }
+
   get plannedGuestTotal(): number {
     return this.entries.reduce((total, entry) => total + entry.plannedGuestCount, 0);
   }
 
-  get sentInvitationCount(): number {
-    return this.entries.filter((entry) => entry.invitationStatus === 'sent').length;
+  get sentInvitationGuestTotal(): number {
+    return this.getGuestTotalByInvitation('sent', this.entries);
   }
 
-  get expectedGuestTotal(): number {
-    return this.entries
-      .filter((entry) => ['coming', 'likely'].includes(entry.forecastStatus))
-      .reduce((total, entry) => total + entry.plannedGuestCount, 0);
+  get comingGuestTotal(): number {
+    return this.getGuestTotalByForecast('coming', this.entries);
+  }
+
+  get notComingGuestTotal(): number {
+    return this.getGuestTotalByForecast('not-coming', this.entries);
+  }
+
+  get likelyGuestTotal(): number {
+    return this.getGuestTotalByForecast('likely', this.entries);
+  }
+
+  get unlikelyGuestTotal(): number {
+    return this.getGuestTotalByForecast('unlikely', this.entries);
   }
 
   get unknownGuestTotal(): number {
-    return this.entries
-      .filter((entry) => entry.forecastStatus === 'unknown')
-      .reduce((total, entry) => total + entry.plannedGuestCount, 0);
+    return this.getGuestTotalByForecast('unknown', this.entries);
+  }
+
+  get currentPossibleGuestTotal(): number {
+    return Math.max(
+      0,
+      this.sentInvitationGuestTotal - this.notComingGuestTotal - this.unlikelyGuestTotal
+    );
+  }
+
+  get filteredEntryCount(): number {
+    return this.filteredEntries.length;
+  }
+
+  get filteredGuestTotal(): number {
+    return this.getGuestTotal(this.filteredEntries);
+  }
+
+  get filteredSentInvitationGuestTotal(): number {
+    return this.getGuestTotalByInvitation('sent', this.filteredEntries);
+  }
+
+  get filteredCurrentPossibleGuestTotal(): number {
+    return Math.max(
+      0,
+      this.filteredSentInvitationGuestTotal
+        - this.getGuestTotalByForecast('not-coming', this.filteredEntries)
+        - this.getGuestTotalByForecast('unlikely', this.filteredEntries)
+    );
   }
 
   loadEntries(): void {
@@ -217,11 +279,11 @@ export class GuestListComponent implements OnChanges {
     }
 
     this.guestListService.create(payload, this.adminKey).subscribe({
-      next: (entry) => {
-        this.entries = [...this.entries, entry];
+      next: () => {
         this.saving = false;
         this.closeForms();
         this.feedbackMessage = 'Davetli listeye eklendi.';
+        this.loadEntries();
       },
       error: () => this.handleSaveError('Davetli listeye eklenemedi.'),
     });
@@ -254,7 +316,7 @@ export class GuestListComponent implements OnChanges {
         plannedGuestCount: Number.isInteger(parsedCount) && parsedCount > 0
           ? Math.min(parsedCount, 20)
           : 1,
-        invitationStatus: 'not-sent' as const,
+        invitationStatus: this.bulkInvitationStatus,
         forecastStatus: this.bulkForecast,
       };
     });
@@ -268,10 +330,10 @@ export class GuestListComponent implements OnChanges {
     this.clearMessages();
     this.guestListService.createBulk(entries, this.adminKey).subscribe({
       next: (createdEntries) => {
-        this.entries = [...this.entries, ...createdEntries];
         this.saving = false;
         this.closeForms();
         this.feedbackMessage = `${createdEntries.length} kayıt listeye eklendi.`;
+        this.loadEntries();
       },
       error: () => this.handleSaveError('Toplu kayıtlar eklenemedi.'),
     });
@@ -362,16 +424,26 @@ export class GuestListComponent implements OnChanges {
   setSort(key: GuestSortKey): void {
     if (this.sortKey === key) {
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+      this.currentPage = 1;
       return;
     }
 
     this.sortKey = key;
     this.sortDirection = key === 'plannedGuestCount' ? 'desc' : 'asc';
+    this.currentPage = 1;
   }
 
   sortIndicator(key: GuestSortKey): string {
     if (this.sortKey !== key) return '↕';
     return this.sortDirection === 'asc' ? '↑' : '↓';
+  }
+
+  goToPreviousPage(): void {
+    this.currentPage = Math.max(1, this.activePage - 1);
+  }
+
+  goToNextPage(): void {
+    this.currentPage = Math.min(this.totalPages, this.activePage + 1);
   }
 
   private updateEntry(
@@ -394,6 +466,28 @@ export class GuestListComponent implements OnChanges {
 
   private replaceEntry(entry: GuestListEntry): void {
     this.entries = this.entries.map((item) => item.id === entry.id ? entry : item);
+  }
+
+  private getGuestTotalByForecast(
+    status: ForecastStatus,
+    entries: GuestListEntry[]
+  ): number {
+    return entries
+      .filter((entry) => entry.forecastStatus === status)
+      .reduce((total, entry) => total + entry.plannedGuestCount, 0);
+  }
+
+  private getGuestTotalByInvitation(
+    status: InvitationStatus,
+    entries: GuestListEntry[]
+  ): number {
+    return this.getGuestTotal(
+      entries.filter((entry) => entry.invitationStatus === status)
+    );
+  }
+
+  private getGuestTotal(entries: GuestListEntry[]): number {
+    return entries.reduce((total, entry) => total + entry.plannedGuestCount, 0);
   }
 
   private compareGuestEntries(a: GuestListEntry, b: GuestListEntry): number {
