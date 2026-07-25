@@ -140,10 +140,6 @@ export class GuestListComponent implements OnChanges {
     return this.getGuestTotalByForecast('not-coming', this.entries);
   }
 
-  get likelyGuestTotal(): number {
-    return this.getGuestTotalByForecast('likely', this.entries);
-  }
-
   get unlikelyGuestTotal(): number {
     return this.getGuestTotalByForecast('unlikely', this.entries);
   }
@@ -420,7 +416,6 @@ export class GuestListComponent implements OnChanges {
   forecastLabel(status: ForecastStatus): string {
     if (status === 'coming') return 'Geliyor';
     if (status === 'not-coming') return 'Gelmiyor';
-    if (status === 'likely') return 'Gelme ihtimali yüksek';
     if (status === 'unlikely') return 'Gelmeme ihtimali yüksek';
     return 'Henüz bilinmiyor';
   }
