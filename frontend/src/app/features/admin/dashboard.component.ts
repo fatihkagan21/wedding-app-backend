@@ -96,6 +96,10 @@ export class DashboardComponent implements OnInit {
   }
 
   get attendingResponses(): number {
+    return this.totalGuests;
+  }
+
+  get attendingResponseCount(): number {
     return this.rsvps.filter((rsvp) => rsvp.attending).length;
   }
 
@@ -112,7 +116,7 @@ export class DashboardComponent implements OnInit {
 
   get attendanceRate(): number {
     if (!this.rsvps.length) return 0;
-    return Math.round((this.attendingResponses / this.rsvps.length) * 100);
+    return Math.round((this.attendingResponseCount / this.rsvps.length) * 100);
   }
 
   get responsesWithNotes(): number {
