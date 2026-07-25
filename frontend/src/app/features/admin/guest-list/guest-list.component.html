@@ -57,7 +57,6 @@
           <select name="forecastStatus" [(ngModel)]="draft.forecastStatus">
             <option value="coming">Geliyor</option>
             <option value="not-coming">Gelmiyor</option>
-            <option value="likely">Gelme ihtimali yüksek</option>
             <option value="unlikely">Gelmeme ihtimali yüksek</option>
             <option value="unknown">Henüz bilinmiyor</option>
           </select>
@@ -112,7 +111,6 @@
           <select name="bulkForecast" [(ngModel)]="bulkForecast">
             <option value="coming">Geliyor</option>
             <option value="not-coming">Gelmiyor</option>
-            <option value="likely">Gelme ihtimali yüksek</option>
             <option value="unlikely">Gelmeme ihtimali yüksek</option>
             <option value="unknown">Henüz bilinmiyor</option>
           </select>
@@ -130,7 +128,6 @@
   <section class="guest-metrics" aria-label="Davetli planı özeti">
     <article><span>Tüm davetiye gönderilenler</span><strong>{{ sentInvitationGuestTotal }}</strong></article>
     <article><span>Gelenler</span><strong>{{ comingGuestTotal }}</strong></article>
-    <article><span>Gelme ihtimali yüksek</span><strong>{{ likelyGuestTotal }}</strong></article>
     <article><span>Gelmeyenler</span><strong>{{ notComingGuestTotal }}</strong></article>
     <article><span>Gelmeme ihtimali yüksek</span><strong>{{ unlikelyGuestTotal }}</strong></article>
     <article><span>Belirsizler</span><strong>{{ unknownGuestTotal }}</strong></article>
@@ -169,7 +166,6 @@
         <option value="all">Tümü</option>
         <option value="coming">Geliyor</option>
         <option value="not-coming">Gelmiyor</option>
-        <option value="likely">Gelme ihtimali yüksek</option>
         <option value="unlikely">Gelmeme ihtimali yüksek</option>
         <option value="unknown">Henüz bilinmiyor</option>
       </select>
@@ -281,7 +277,6 @@
                   [disabled]="updatingId === entry.id">
                   <option value="coming">Geliyor</option>
                   <option value="not-coming">Gelmiyor</option>
-                  <option value="likely">Gelme ihtimali yüksek</option>
                   <option value="unlikely">Gelmeme ihtimali yüksek</option>
                   <option value="unknown">Henüz bilinmiyor</option>
                 </select>

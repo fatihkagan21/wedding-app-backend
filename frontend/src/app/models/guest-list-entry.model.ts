@@ -1,6 +1,6 @@
 export type GuestSide = 'bride' | 'groom' | 'shared';
 export type InvitationStatus = 'not-sent' | 'sent';
-export type ForecastStatus = 'coming' | 'not-coming' | 'likely' | 'unlikely' | 'unknown';
+export type ForecastStatus = 'coming' | 'not-coming' | 'unlikely' | 'unknown';
 
 export interface GuestListEntry {
   id: string;

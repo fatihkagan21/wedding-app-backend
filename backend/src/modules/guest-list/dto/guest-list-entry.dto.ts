@@ -3,7 +3,6 @@ export const invitationStatuses = ["not-sent", "sent"] as const;
 export const forecastStatuses = [
   "coming",
   "not-coming",
-  "likely",
   "unlikely",
   "unknown",
 ] as const;
