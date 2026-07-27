@@ -198,12 +198,13 @@
     <div class="table-wrap">
       <table>
         <colgroup>
-          <col style="width: 32%">
+          <col style="width: 28%">
           <col style="width: 7%">
+          <col style="width: 11%">
+          <col style="width: 13%">
+          <col style="width: 18%">
+          <col style="width: 11%">
           <col style="width: 12%">
-          <col style="width: 14%">
-          <col style="width: 20%">
-          <col style="width: 15%">
         </colgroup>
         <thead>
           <tr>
@@ -230,6 +231,11 @@
             <th>
               <button class="sort-button" style="width: 100%; display: flex; gap: 5px; border: 0; background: transparent; cursor: pointer; white-space: nowrap;" type="button" (click)="setSort('forecastStatus')">
                 Beklenti <span>{{ sortIndicator('forecastStatus') }}</span>
+              </button>
+            </th>
+            <th>
+              <button class="sort-button" style="width: 100%; display: flex; gap: 5px; border: 0; background: transparent; cursor: pointer; white-space: nowrap;" type="button" (click)="setSort('createdAt')">
+                Giriş tarihi <span>{{ sortIndicator('createdAt') }}</span>
               </button>
             </th>
             <th class="action-heading">İşlem</th>
@@ -281,6 +287,7 @@
                   <option value="unknown">Henüz bilinmiyor</option>
                 </select>
               </td>
+              <td data-label="Giriş tarihi">{{ entry.createdAt | date:'dd.MM.yyyy HH:mm' }}</td>
               <td class="row-actions" data-label="İşlem">
                 <div class="row-action-buttons">
                   <button class="edit-button" type="button" (click)="openEditForm(entry)">Düzenle</button>
@@ -315,6 +322,7 @@
               <strong>{{ filteredCurrentPossibleGuestTotal }}</strong>
               <small>anlık olası</small>
             </td>
+            <td data-label="Giriş tarihi"></td>
             <td data-label="İşlem"></td>
           </tr>
         </tfoot>

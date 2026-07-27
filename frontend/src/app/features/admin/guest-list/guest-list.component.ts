@@ -21,7 +21,13 @@ interface GuestDraft {
   notes: string;
 }
 
-type GuestSortKey = 'displayName' | 'plannedGuestCount' | 'side' | 'invitationStatus' | 'forecastStatus';
+type GuestSortKey =
+  | 'displayName'
+  | 'plannedGuestCount'
+  | 'side'
+  | 'invitationStatus'
+  | 'forecastStatus'
+  | 'createdAt';
 type SortDirection = 'asc' | 'desc';
 
 const createEmptyDraft = (): GuestDraft => ({
@@ -428,7 +434,7 @@ export class GuestListComponent implements OnChanges {
     }
 
     this.sortKey = key;
-    this.sortDirection = key === 'plannedGuestCount' ? 'desc' : 'asc';
+    this.sortDirection = key === 'plannedGuestCount' || key === 'createdAt' ? 'desc' : 'asc';
     this.currentPage = 1;
   }
 
@@ -498,6 +504,10 @@ export class GuestListComponent implements OnChanges {
 
     if (this.sortKey === 'plannedGuestCount') {
       return (a.plannedGuestCount - b.plannedGuestCount) * direction;
+    }
+
+    if (this.sortKey === 'createdAt') {
+      return (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()) * direction;
     }
 
     const left = this.getGuestSortValue(a);
