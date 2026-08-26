@@ -8,7 +8,7 @@ export const routes: Routes = [
     component: DashboardComponent
   },
   {
-    path: 'photos',
+    path: 'ani-kosesi',
     component: EventPageComponent,
     data: { initialSection: 'photos' }
   },
